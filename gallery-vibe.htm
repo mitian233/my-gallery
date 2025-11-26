@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina | 极简视觉流</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    
+    <!-- 自定义配置 Tailwind 字体和颜色 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        dark: '#0a0a0a',
+                        light: '#fafafa',
+                        accent: '#e2e2e2'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* 基础设置 */
+        body {
+            background-color: #0a0a0a;
+            color: #fafafa;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* * 1. 首屏 CSS Keyframes 动画 
+         */
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 动画实用类 */
+        .animate-entry {
+            opacity: 0; /* 初始状态隐藏 */
+            animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        /* 延迟设置 */
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+
+        /* * 2. 瀑布流布局 
+         */
+        .masonry-grid {
+            column-count: 1;
+            column-gap: 1.5rem;
+        }
+        @media (min-width: 640px) { .masonry-grid { column-count: 2; } }
+        @media (min-width: 1024px) { .masonry-grid { column-count: 3; } }
+        @media (min-width: 1280px) { .masonry-grid { column-count: 4; } }
+
+        /* * 3. IntersectionObserver 目标样式 
+         */
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 1.5rem;
+            /* 初始状态：下沉且透明 */
+            opacity: 0;
+            transform: translateY(50px);
+            /* 过渡效果：用于 IntersectionObserver 触发后的平滑复位 */
+            transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: opacity, transform;
+        }
+
+        /* 当元素进入视口时添加此类 */
+        .masonry-item.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 图片悬停遮罩渐变 */
+        .overlay-gradient {
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 50%);
+        }
+
+        /* * 4. 灯箱过渡动画 (CSS Transitions) 
+         */
+        #lightbox {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+        #lightbox.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* 灯箱内部元素动画 */
+        #lightbox-img, .lightbox-info-container {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        /* 激活时的延迟，制造错落感 */
+        #lightbox.active #lightbox-img {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.1s;
+        }
+        #lightbox.active .lightbox-info-container {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.2s;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-white selection:text-black">
+
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 left-0 w-full z-40 px-6 py-6 flex justify-between items-center mix-blend-difference text-white">
+        <div class="text-2xl font-serif font-bold tracking-tighter cursor-pointer hover:opacity-80 transition-opacity">
+            Lumina.
+        </div>
+        <div class="hidden md:flex gap-6 text-sm font-medium tracking-wide">
+            <a href="#" class="hover:underline underline-offset-4">关于</a>
+            <a href="#" class="hover:underline underline-offset-4">联系</a>
+        </div>
+    </nav>
+
+    <!-- 头部区域：使用 CSS 动画 (.animate-entry) -->
+    <header class="pt-32 pb-12 px-6 md:px-12 max-w-7xl mx-auto">
+        <h1 class="text-5xl md:text-7xl font-serif font-bold mb-6 leading-tight mask-text overflow-hidden">
+            <!-- 拆分文本以应用不同的延迟 -->
+            <span class="inline-block animate-entry delay-100">捕捉瞬间的</span><br>
+            <span class="inline-block animate-entry delay-200">永恒光影</span>
+        </h1>
+        
+        <!-- 过滤器 -->
+        <div class="flex flex-wrap gap-4 mt-8 animate-entry delay-300" id="filters">
+            <button data-filter="all" class="filter-btn px-4 py-2 border border-white/20 rounded-full text-sm hover:bg-white hover:text-black transition-all duration-300 bg-white text-black">全部</button>
+            <button data-filter="landscape" class="filter-btn px-4 py-2 border border-white/20 rounded-full text-sm hover:bg-white hover:text-black transition-all duration-300">自然风光</button>
+            <button data-filter="portrait" class="filter-btn px-4 py-2 border border-white/20 rounded-full text-sm hover:bg-white hover:text-black transition-all duration-300">人像摄影</button>
+            <button data-filter="architecture" class="filter-btn px-4 py-2 border border-white/20 rounded-full text-sm hover:bg-white hover:text-black transition-all duration-300">城市建筑</button>
+        </div>
+    </header>
+
+    <!-- 照片流容器 -->
+    <main class="px-6 md:px-12 pb-24 max-w-[1600px] mx-auto min-h-screen">
+        <div id="gallery-grid" class="masonry-grid">
+            <!-- JavaScript 动态插入 -->
+        </div>
+    </main>
+
+    <!-- 详情灯箱 (Lightbox) -->
+    <div id="lightbox" class="fixed inset-0 z-50">
+        <!-- 背景模糊层 -->
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-md cursor-zoom-out" id="lightbox-bg"></div>
+        
+        <!-- 内容区 -->
+        <div class="absolute inset-0 flex items-center justify-center p-4 md:p-12 pointer-events-none">
+            <div class="relative w-full max-w-5xl max-h-full flex flex-col md:flex-row gap-8 pointer-events-auto">
+                
+                <!-- 大图 -->
+                <div class="flex-1 relative overflow-hidden rounded-sm shadow-2xl flex items-center justify-center">
+                    <img id="lightbox-img" src="" alt="" class="max-w-full max-h-[85vh] object-contain">
+                </div>
+
+                <!-- 信息侧边栏 -->
+                <div class="lightbox-info-container w-full md:w-80 flex flex-col justify-end text-white pb-4 md:pb-0">
+                    <span id="lightbox-category" class="text-xs font-mono text-gray-400 mb-2 uppercase tracking-widest">Category</span>
+                    <h2 id="lightbox-title" class="text-3xl font-serif mb-4">Title</h2>
+                    <p id="lightbox-desc" class="text-sm text-gray-300 leading-relaxed mb-6">Description goes here.</p>
+                    <div class="flex items-center gap-4 text-xs text-gray-500 font-mono border-t border-white/10 pt-4 mt-auto">
+                        <span>ISO 400</span>
+                        <span>f/2.8</span>
+                        <span>1/500s</span>
+                    </div>
+                </div>
+
+                <!-- 关闭按钮 -->
+                <button id="lightbox-close" class="absolute -top-12 right-0 md:-right-12 text-white hover:text-gray-300 transition-colors p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部 -->
+    <footer class="border-t border-white/10 py-12 text-center text-gray-500 text-sm font-mono">
+        <p>&copy; 2024 Lumina Photography. Vanilla JS & CSS Animations.</p>
+    </footer>
+
+    <!-- 核心逻辑脚本 -->
+    <script>
+        // ------------------------------------------------------------------
+        // 1. 数据模拟 (Mock Data)
+        // ------------------------------------------------------------------
+        const photoData = [
+            { id: 1, url: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800&q=80', largeUrl: 'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=1600&q=90', category: 'landscape', title: '高山迷雾', desc: '清晨的阿尔卑斯山脉，雾气缭绕在针叶林之间。' },
+            { id: 2, url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&q=80', largeUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1600&q=90', category: 'portrait', title: '街头回眸', desc: '纽约街头偶然捕捉到的瞬间，光影完美地勾勒出轮廓。' },
+            { id: 3, url: 'https://images.unsplash.com/photo-1479839672679-a46483c0e7c8?w=800&q=80', largeUrl: 'https://images.unsplash.com/photo-1479839672679-a46483c0e7c8?w=1600&q=90', category: 'architecture', title: '几何秩序', desc: '现代主义建筑的线条美学，黑与白的极致对比。' },
+            { id: 4, url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80', largeUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&q=90', category: 'landscape', title: '风暴前夕', desc: '大西洋海岸线上的乌云密布，海浪拍打着礁石。' },
+            { id: 5, url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&q=80', largeUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=1600&q=90', category: 'portrait', title: '自然神态', desc: '无需摆拍的真实流露，使用了 85mm 镜头拍摄。' },
+            { id: 6, url: 'https://images.unsplash.com/photo-1518005052304-a37d996b0756?w=800&q=80', largeUrl: 'https://images.unsplash.com/photo-1518005052304-a37d996b0756?w=1600&q=90', category: 'architecture', title: '旋转阶梯', desc: '梵蒂冈博物馆的螺旋楼梯，经典的构图视角。' },
+            { id: 7, url: 'https://images.unsplash.com/photo-1500964757637-c85e8a162699?w=800&q=80', largeUrl: 'https://images.unsplash.com/photo-1500964757637-c85e8a162699?w=1600&q=90', category: 'landscape', title: '秋日私语', desc: '金色的阳光透过树叶洒在地面上，温暖的色调。' },
+            { id: 8, url: 'https://images.unsplash.com/photo-1481349518771-20055b2a7b24?w=800&q=80', largeUrl: 'https://images.unsplash.com/photo-1481349518771-20055b2a7b24?w=1600&q=90', category: 'architecture', title: '玻璃幕墙', desc: '反射着蓝天的摩天大楼细节。' },
+            { id: 9, url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&q=80', largeUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=1600&q=90', category: 'portrait', title: '光影游戏', desc: '百叶窗投下的阴影创造出的独特纹理。' },
+            { id: 10, url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80', largeUrl: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1600&q=90', category: 'landscape', title: '孤寂之路', desc: '通向远方的公路，象征着探索与未知。' },
+            { id: 11, url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80', largeUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=90', category: 'architecture', title: '极简空间', desc: '纯白色的室内设计，强调光线的流动。' },
+        ];
+
+        // ------------------------------------------------------------------
+        // 2. 状态与 DOM
+        // ------------------------------------------------------------------
+        const galleryGrid = document.getElementById('gallery-grid');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxTitle = document.getElementById('lightbox-title');
+        const lightboxDesc = document.getElementById('lightbox-desc');
+        const lightboxCategory = document.getElementById('lightbox-category');
+        const lightboxClose = document.getElementById('lightbox-close');
+        const lightboxBg = document.getElementById('lightbox-bg');
+
+        // ------------------------------------------------------------------
+        // 3. IntersectionObserver 设置
+        // ------------------------------------------------------------------
+        // 用于监听元素是否进入视口
+        const observerOptions = {
+            root: null,   // 使用视口作为根
+            rootMargin: '0px',
+            threshold: 0.1 // 元素露出 10% 时触发
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // 添加 .in-view 类触发 CSS 动画
+                    entry.target.classList.add('in-view');
+                    // 动效触发后取消监听，节省资源
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // ------------------------------------------------------------------
+        // 4. 渲染逻辑
+        // ------------------------------------------------------------------
+        function createPhotoItem(photo) {
+            const item = document.createElement('div');
+            // 注意：masonry-item 默认 opacity: 0
+            item.className = 'masonry-item relative group cursor-pointer overflow-hidden rounded-sm';
+            item.setAttribute('data-category', photo.category);
+            
+            item.innerHTML = `
+                <img src="${photo.url}" alt="${photo.title}" class="w-full h-auto block transform transition-transform duration-700 group-hover:scale-110 will-change-transform" loading="lazy">
+                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 overlay-gradient">
+                    <span class="text-xs text-gray-300 font-mono uppercase tracking-wider mb-1 translate-y-4 group-hover:translate-y-0 transition-transform duration-300">${photo.category}</span>
+                    <h3 class="text-white font-serif text-xl translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">${photo.title}</h3>
+                </div>
+            `;
+
+            item.addEventListener('click', () => openLightbox(photo));
+
+            // 加入观察列表
+            observer.observe(item);
+
+            return item;
+        }
+
+        function renderGallery(filter = 'all') {
+            // 清空当前内容
+            galleryGrid.innerHTML = '';
+            
+            const filteredData = filter === 'all' 
+                ? photoData 
+                : photoData.filter(p => p.category === filter);
+
+            filteredData.forEach(photo => {
+                const el = createPhotoItem(photo);
+                galleryGrid.appendChild(el);
+            });
+        }
+
+        // 初始化
+        window.addEventListener('load', () => {
+            renderGallery();
+        });
+
+        // ------------------------------------------------------------------
+        // 5. 交互逻辑
+        // ------------------------------------------------------------------
+
+        // 过滤器
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // UI 状态更新
+                filterButtons.forEach(b => {
+                    b.classList.remove('bg-white', 'text-black');
+                    b.classList.add('text-white');
+                });
+                e.target.classList.add('bg-white', 'text-black');
+                e.target.classList.remove('text-white');
+
+                const filter = e.target.getAttribute('data-filter');
+                
+                // 简单的重新渲染（IntersectionObserver 会自动处理新元素的入场）
+                // 如果需要淡出旧元素，可以在这里添加逻辑，但直接替换响应最快
+                renderGallery(filter);
+            });
+        });
+
+        // 灯箱逻辑
+        function openLightbox(photo) {
+            lightboxImg.src = photo.largeUrl;
+            lightboxTitle.innerText = photo.title;
+            lightboxDesc.innerText = photo.desc;
+            lightboxCategory.innerText = photo.category;
+
+            // 激活 CSS 类
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            // 等待 CSS transition 结束后清理图片
+            setTimeout(() => {
+                if (!lightbox.classList.contains('active')) {
+                    lightboxImg.src = '';
+                    document.body.style.overflow = '';
+                }
+            }, 300); // 300ms 对应 CSS 中的 transition duration
+        }
+
+        lightboxClose.addEventListener('click', closeLightbox);
+        lightboxBg.addEventListener('click', closeLightbox);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+    </script>
+</body>
+</html>

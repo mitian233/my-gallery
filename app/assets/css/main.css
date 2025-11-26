@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+@config "./tailwind.config.js";
+
+/* 基础设置 */
+body {
+  background-color: #0a0a0a;
+  color: #fafafa;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* * 1. 首屏 CSS Keyframes 动画 
+         */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 动画实用类 */
+.animate-entry {
+  opacity: 0; /* 初始状态隐藏 */
+  animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 延迟设置 */
+.delay-100 {
+  animation-delay: 100ms;
+}
+.delay-200 {
+  animation-delay: 200ms;
+}
+.delay-300 {
+  animation-delay: 300ms;
+}
+
+/* * 2. 瀑布流布局 
+         */
+.masonry-grid {
+  column-count: 1;
+  column-gap: 1.5rem;
+}
+@media (min-width: 640px) {
+  .masonry-grid {
+    column-count: 2;
+  }
+}
+@media (min-width: 1024px) {
+  .masonry-grid {
+    column-count: 3;
+  }
+}
+@media (min-width: 1280px) {
+  .masonry-grid {
+    column-count: 4;
+  }
+}
+
+/* * 3. IntersectionObserver 目标样式 
+         */
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1.5rem;
+  /* 初始状态：下沉且透明 */
+  opacity: 0;
+  transform: translateY(50px);
+  /* 过渡效果：用于 IntersectionObserver 触发后的平滑复位 */
+  transition: opacity 0.8s ease-out,
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+/* 当元素进入视口时添加此类 */
+.masonry-item.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 图片悬停遮罩渐变 */
+.overlay-gradient {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0) 50%
+  );
+}
+
+/* * 4. 灯箱过渡动画 (CSS Transitions) 
+         */
+#lightbox {
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+#lightbox.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 灯箱内部元素动画 */
+#lightbox-img,
+.lightbox-info-container {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* 激活时的延迟，制造错落感 */
+#lightbox.active #lightbox-img {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.1s;
+}
+#lightbox.active .lightbox-info-container {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.2s;
+}
