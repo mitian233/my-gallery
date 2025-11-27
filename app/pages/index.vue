@@ -140,7 +140,7 @@ const setFilter = async (filter: string) => {
   await new Promise((resolve) => setTimeout(resolve, 800));
 
   currentFilter.value = filter;
-  
+
   // Reset exit state
   isGridExiting.value = false;
 };
