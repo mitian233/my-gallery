@@ -10,7 +10,7 @@ interface Photo {
   desc: string;
 }
 
-const props = defineProps<{
+defineProps<{
   photo: Photo;
 }>();
 

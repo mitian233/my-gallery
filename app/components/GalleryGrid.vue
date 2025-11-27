@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import GalleryItem from "./GalleryItem.vue";
-
-interface Photo {
-  id: number;
-  url: string;
-  largeUrl: string;
-  category: string;
-  title: string;
-  desc: string;
-}
+import type Photo from "@/../shared/types/Photo";
 
 defineProps<{
   photos: Photo[];

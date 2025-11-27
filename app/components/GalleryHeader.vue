@@ -28,13 +28,13 @@ const filters = [
       <button
         v-for="filter in filters"
         :key="filter.id"
-        @click="emit('filter', filter.id)"
-        class="filter-btn px-4 py-2 border border-white/20 rounded-full text-sm transition-all duration-300"
         :class="[
           currentFilter === filter.id
             ? 'bg-white text-black'
             : 'hover:bg-white hover:text-black text-white',
         ]"
+        class="filter-btn px-4 py-2 border border-white/20 rounded-full text-sm transition-all duration-300"
+        @click="emit('filter', filter.id)"
       >
         {{ filter.label }}
       </button>

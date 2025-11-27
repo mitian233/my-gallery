@@ -94,8 +94,8 @@ if (typeof window !== "undefined") {
 
         <!-- 关闭按钮 -->
         <button
-          @click="emit('close')"
           class="absolute -top-12 right-0 md:-right-12 text-white hover:text-gray-300 transition-colors p-2"
+          @click="emit('close')"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -108,8 +108,8 @@ if (typeof window !== "undefined") {
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
       </div>

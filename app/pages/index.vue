@@ -5,6 +5,7 @@ import TheFooter from "~/components/TheFooter.vue";
 import GalleryHeader from "~/components/GalleryHeader.vue";
 import GalleryGrid from "~/components/GalleryGrid.vue";
 import GalleryLightbox from "~/components/GalleryLightbox.vue";
+import type Photo from "~~/shared/types/Photo";
 
 useHead({
   title: "Lumina | 极简视觉流",
@@ -117,7 +118,7 @@ const photoData = [
 // State
 const currentFilter = ref("all");
 const isLightboxOpen = ref(false);
-const lightboxPhoto = ref(null);
+const lightboxPhoto = ref<Photo | null>(null);
 
 // Computed
 const filteredPhotos = computed(() => {
@@ -132,7 +133,7 @@ const setFilter = (filter: string) => {
   currentFilter.value = filter;
 };
 
-const openLightbox = (photo: any) => {
+const openLightbox = (photo: Photo) => {
   lightboxPhoto.value = photo;
   isLightboxOpen.value = true;
 };
@@ -156,7 +157,7 @@ const closeLightbox = () => {
 
     <GalleryHeader :current-filter="currentFilter" @filter="setFilter" />
 
-    <main class="px-6 md:px-12 pb-24 max-w-[1600px] mx-auto w-full flex-grow">
+    <main class="px-6 md:px-12 pb-24 max-w-[1600px] mx-auto w-full grow">
       <GalleryGrid :photos="filteredPhotos" @open-lightbox="openLightbox" />
     </main>
 
