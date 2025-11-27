@@ -16,7 +16,7 @@ const filters = [
 </script>
 
 <template>
-  <header class="pt-32 pb-12 px-6 md:px-12 max-w-7xl mx-auto">
+  <header class="pt-32 pb-12 px-6 md:px-12 max-w-7xl">
     <h1
       class="text-5xl md:text-7xl font-serif font-bold mb-6 leading-tight mask-text overflow-hidden"
     >
