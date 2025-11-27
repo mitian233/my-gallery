@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from "vue";
+import { watch, ref, nextTick } from "vue";
 
 interface Photo {
   id: number;
@@ -19,10 +19,22 @@ const emit = defineEmits<{
   (e: "close"): void;
 }>();
 
+const isActive = ref(false);
+
 // Lock body scroll when lightbox is open
 watch(
   () => props.isOpen,
-  (isOpen) => {
+  async (isOpen) => {
+    if (isOpen) {
+      await nextTick();
+      // Small delay to ensure DOM is updated and browser registers initial state
+      requestAnimationFrame(() => {
+        isActive.value = true;
+      });
+    } else {
+      isActive.value = false;
+    }
+
     if (typeof document !== "undefined") {
       document.body.style.overflow = isOpen ? "hidden" : "";
     }
@@ -41,7 +53,7 @@ if (typeof window !== "undefined") {
 </script>
 
 <template>
-  <div id="lightbox" class="fixed inset-0 z-50" :class="{ active: isOpen }">
+  <div id="lightbox" class="fixed inset-0 z-50" :class="{ active: isActive }">
     <!-- 背景模糊层 -->
     <div
       class="absolute inset-0 bg-black/90 backdrop-blur-md cursor-zoom-out"
@@ -108,11 +120,44 @@ if (typeof window !== "undefined") {
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+/* * 4. 灯箱过渡动画 (CSS Transitions) */
+#lightbox {
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+#lightbox.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 灯箱内部元素动画 */
+#lightbox-img,
+.lightbox-info-container {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* 激活时的延迟，制造错落感 */
+#lightbox.active #lightbox-img {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.1s;
+}
+#lightbox.active .lightbox-info-container {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.2s;
+}
+</style>

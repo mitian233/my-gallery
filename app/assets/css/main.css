@@ -103,35 +103,3 @@ body {
     rgba(0, 0, 0, 0) 50%
   );
 }
-
-/* * 4. 灯箱过渡动画 (CSS Transitions) 
-         */
-#lightbox {
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-  opacity: 0;
-  visibility: hidden;
-}
-#lightbox.active {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* 灯箱内部元素动画 */
-#lightbox-img,
-.lightbox-info-container {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-/* 激活时的延迟，制造错落感 */
-#lightbox.active #lightbox-img {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 0.1s;
-}
-#lightbox.active .lightbox-info-container {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 0.2s;
-}

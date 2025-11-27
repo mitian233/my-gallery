@@ -119,6 +119,7 @@ const photoData = [
 const currentFilter = ref("all");
 const isLightboxOpen = ref(false);
 const lightboxPhoto = ref<Photo | null>(null);
+const isGridExiting = ref(false);
 
 // Computed
 const filteredPhotos = computed(() => {
@@ -129,8 +130,19 @@ const filteredPhotos = computed(() => {
 });
 
 // Methods
-const setFilter = (filter: string) => {
+const setFilter = async (filter: string) => {
+  if (currentFilter.value === filter) return;
+
+  // Start exit animation
+  isGridExiting.value = true;
+
+  // Wait for exit animation to complete (0.8s matches CSS transition)
+  await new Promise((resolve) => setTimeout(resolve, 800));
+
   currentFilter.value = filter;
+  
+  // Reset exit state
+  isGridExiting.value = false;
 };
 
 const openLightbox = (photo: Photo) => {
@@ -158,7 +170,12 @@ const closeLightbox = () => {
     <GalleryHeader :current-filter="currentFilter" @filter="setFilter" />
 
     <main class="px-6 md:px-12 pb-24 max-w-[1600px] mx-auto w-full grow">
-      <GalleryGrid :photos="filteredPhotos" @open-lightbox="openLightbox" />
+      <GalleryGrid
+        :photos="filteredPhotos"
+        :is-exiting="isGridExiting"
+        :grid-key="currentFilter"
+        @open-lightbox="openLightbox"
+      />
     </main>
 
     <TheFooter />

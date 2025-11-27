@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, onUnmounted } from "vue";
+import { onMounted, ref, onUnmounted, watch } from "vue";
 
 interface Photo {
   id: number;
@@ -10,8 +10,9 @@ interface Photo {
   desc: string;
 }
 
-defineProps<{
+const props = defineProps<{
   photo: Photo;
+  isExiting?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -20,6 +21,15 @@ const emit = defineEmits<{
 
 const itemRef = ref<HTMLElement | null>(null);
 let observer: IntersectionObserver | null = null;
+
+watch(
+  () => props.isExiting,
+  (isExiting) => {
+    if (isExiting && itemRef.value) {
+      itemRef.value.classList.remove("in-view");
+    }
+  }
+);
 
 onMounted(() => {
   if (!itemRef.value) return;
